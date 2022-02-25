@@ -1,10 +1,10 @@
 
 
-# Predictive Coding based Context-awaRe novelty Detection (PC-CARD)
+# Predictive Coding based Context-awaRe Detection of Novelty (PC-CARD)
 
-### One of the components of TrinityAI is PC-CARD: Predictive Coding based Context-aware Novelty Detection. PC-CARD uses the Layer 2 of the TrinityAI monitoring framework currently implemented via Graph Neural Networks to identify when the input has no novel concept but the concepts appears in a new composition with out-of-context concept(s). We use object detection task to demonstrate this capability here. In this task, out-of-context concepts correspond to instances of a known object class but occurring in a new context. For example, a typically outdoor concept such as a zebra occurring indoors in the reception of an office.
+### One of the components of TrinityAI is PC-CARD: Predictive Coding based Context-aware Detection of Novelty. PC-CARD uses the Layer 2 of the TrinityAI monitoring framework currently implemented via Graph Neural Networks to identify when the input has no novel concept but the concepts appears in a new composition with out-of-context concept(s). We use object detection task to demonstrate this capability here. In this task, out-of-context concepts correspond to instances of a known object class but occurring in a new context. For example, a typically outdoor concept such as a zebra occurring indoors in the reception of an office.
 
-![alt text](https://github.com/SRI-CSL/Trinity-AI/blob/main/assets/ooc-zebra.jpg?raw=true)
+![alt text](https://github.com/SRI-CSL/TrinityAI-Monitor/blob/main/assets/ooc-zebra.jpg?raw=true)
 
 ## Train Object Detector: 
 
