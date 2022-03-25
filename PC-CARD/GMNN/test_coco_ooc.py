@@ -40,6 +40,10 @@ from data.data_loader import *
 from models.registry import GCN_4_layer_fc
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--data_root', type=str, help='Data feature root directory')
+parser.add_argument('--model_dir', type=str, help='Model directory')
+parser.add_argument('--img_ip_dir', type=str, help='Input image directory')
+parser.add_argument('--img_op_dir', type=str, help='Output image directory')
 parser.add_argument('--dataset', type=str, default='data')
 parser.add_argument('--save', type=str, default='gmnn_models')
 parser.add_argument('--hidden_dim', type=int, default=16, help='Hidden dimension.')
@@ -65,7 +69,6 @@ parser.add_argument('--testrun', action='store_true')
 args = parser.parse_args()
 
 
-
 opt = vars(args)
 ##
 opt['hidden_dim'] = 16
@@ -87,7 +90,9 @@ opt['tau'] = 0.1
 opt['num_class'] = 80
 # train on the GPU or on the CPU, if a GPU is not available
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+# device = torch.device('cpu')
 
+# hyper paameters 
 num_classes = 80
 h1_dim = 256
 h2_dim = 128
@@ -95,6 +100,8 @@ h3_dim = 64
 h4_dim = 64
 in_feats = 2048
 geo_feat_len = 7
+train_batch_size = 1024
+val_batch_size = 1024
 
 ##add geo_feat_len i.e geo_feats here
 p_in_feats = num_classes + geo_feat_len
@@ -112,29 +119,26 @@ opt_p['name'] = 'trainer_p'
 opt_p['geo_feat_len'] = 0  # so that all features is used
 trainer_p = Trainer(opt_p, gnnp)
 
-# --------------
-# PATHS
-OOC_img_dirpath    = '/workspace/aroy/datasets/coco_ooc/OOC_images'
-OOC_img_op_dirpath = '/workspace/aroy/datasets/coco_ooc/OOC_images_outputs/'
+# --------- Image paths ----------
+OOC_img_dirpath    = args.img_ip_dir 
+OOC_img_op_dirpath = args.img_op_dir 
 
+#---------- Models ----------
 
-DIR = "/workspace/aroy/datasets/coco_ooc/models/extra_gmm_save/"  # resnet v1
-print("using ", DIR)
-trainer_q.load(osp.join(DIR, "gnnq.pt"))
+model_dir = args.model_dir
+#print("using ", DIR)
+trainer_q.load(osp.join(model_dir, "gnnq.pt"))
 print("load checkpoints Q .............")
-trainer_p.load(osp.join(DIR, "gnnp.pt"))
+trainer_p.load(osp.join(model_dir, "gnnp.pt"))
 print("load checkpoints P.............")
-# ---------
 
-train_batch_size = 1024
-val_batch_size = 1024
+# ---------- Data ---------------
 
-ROOT = "/workspace/aroy/datasets/coco_ooc/graphs_normalized_part/"
-
-graph_dir_test = os.path.join(ROOT, "val")
+data_root = args.data_root
+graph_dir_test = os.path.join(data_root, "val")
 print(f"testing {graph_dir_test}....")
 
-# ----------------------- data loaders -----------------------------------------
+# ----------- data loaders ------------
 print("curating graphs .....")
 node_num_thresh = 0
 
@@ -220,9 +224,9 @@ def pred_labelsfrom_q():
     # predict labels with the q network
     g_path_to_label = {}
     # all files
-    files = os.listdir(osp.join(ROOT, "val"))
+    files = os.listdir(osp.join(data_root, "val"))
     for idx, gfile in tqdm(enumerate(files), total=len(files), desc="Predicting labels with Q"):
-        g_path = os.path.join(ROOT, "val", gfile)
+        g_path = os.path.join(data_root, "val", gfile)
         parts = g_path.split("/")
         split = parts[-2]
         G, _ = load_graphs(g_path)
@@ -247,7 +251,7 @@ coco_classes = set(coco_fake2names.values())
 coco_names2fakeid = {v: k for k, v in coco_fake2names.items()}
 
 # all files
-files = os.listdir(osp.join(ROOT, "val"))
+files = os.listdir(osp.join(data_root, "val"))
 
 # %%
 import random
@@ -255,8 +259,8 @@ import random
 while input("press any key to continue or q to exit ") != "q":
 # while True:
     gfile = random.choice(files)
-    g_path = os.path.join(ROOT, "val", gfile)
-    # g_path = graph_dir_test = os.path.join(ROOT, "val" , "208.bin")
+    g_path = os.path.join(data_root, "val", gfile)
+    # g_path = graph_dir_test = os.path.join(data_root, "val" , "208.bin")
     parts = g_path.split("/")
     split = parts[-2]
     G, _ = load_graphs(g_path)
@@ -268,8 +272,10 @@ while input("press any key to continue or q to exit ") != "q":
     target_onehot = torch.zeros(len(per_graph_labels), opt['num_class']).to(device)
     target_onehot.scatter_(1, per_graph_labels.unsqueeze(1), 1.0)
 
-    print("for p")
+    
     # for p network
+    # print("for p")
+    print("With context")
     batch = G.to(device)
     feats_old = batch.ndata['feature'].clone().detach()
     # batch.ndata['feature'] = target_onehot  # num_nodes x num_class
@@ -283,7 +289,7 @@ while input("press any key to continue or q to exit ") != "q":
     softmaxes = torch.softmax(logits, dim=-1)
     correct = preds.eq(target_idx).double()
     accuracy = correct.sum() / len(preds)
-    print("accuracy {} ", 100 * accuracy.item())
+    # print("accuracy: {100 * accuracy.item()}")
 
     for i in range(len(preds)):
         t = target_idx[i].item()
@@ -291,11 +297,13 @@ while input("press any key to continue or q to exit ") != "q":
         conf = torch.max(softmaxes[i]).item()
         target_name = coco_fake2names.get(t)
         pred_name = coco_fake2names.get(p)
-        print(f"node {i}: (target, pred) ({t},{p}) {target_name},{pred_name} confidence:{conf:.2f}")
+        # print(f"node {i}: (target, pred) ({t},{p}) {target_name},{pred_name} confidence:{conf:.2f}")
+        print(f"Node index: {i} |  ground truth class: {target_name} | predicted class: {pred_name}")
 
     print("------------------------")
-    print("for q")
     # for q network
+    # print("for q")
+    print("Without context")
     batch = G.to(device)
     batch.ndata['feature'] = feats_old
     logits = trainer_q.predict(batch)
@@ -304,7 +312,7 @@ while input("press any key to continue or q to exit ") != "q":
     softmaxes = torch.softmax(logits, dim=-1)
     correct = preds.eq(target_idx).double()
     accuracy = correct.sum() / len(preds)
-    print("accuracy {} ", 100 * accuracy.item())
+    # print("accuracy: {100 * accuracy.item()}")
 
     for i in range(len(preds)):
         t = target_idx[i].item()
@@ -312,7 +320,8 @@ while input("press any key to continue or q to exit ") != "q":
         conf = torch.max(softmaxes[i]).item()
         target_name = coco_fake2names.get(t)
         pred_name = coco_fake2names.get(p)
-        print(f"node {i}: (target, pred) ({t},{p}) {target_name},{pred_name} confidence:{conf:.2f}")
+        # print(f"node {i}: (target, pred) ({t},{p}) {target_name},{pred_name} confidence:{conf:.2f}")
+        print(f"Node index: {i} |  ground truth class: {target_name} | predicted class: {pred_name}")
 
     # copy images to see
     imgfile = gfile.replace(".bin", ".jpg")
@@ -340,7 +349,7 @@ if use_pred_label:
     g_path_to_label = pred_labelsfrom_q()
 
 for idx, gfile in tqdm(enumerate(files), total=len(files)):
-    g_path = os.path.join(ROOT, "val", gfile)
+    g_path = os.path.join(data_root, "val", gfile)
     parts = g_path.split("/")
     split = parts[-2]
     #print (idx, g_path)
@@ -401,8 +410,6 @@ for idx, gfile in tqdm(enumerate(files), total=len(files)):
 
 print("stats")
 print("total images: ", len(files))
-
-
 
 
 overall_acc = accuracy_score(ooc_target + non_ooc_target, ooc_pred + non_ooc_pred)

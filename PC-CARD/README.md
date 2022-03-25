@@ -12,8 +12,16 @@ Tested with Python 3.7.6 and the anaconda environment file used for the project 
 
 ## Data: 
 
-1. data_root: /workspace/aroy/datasets/coco_ooc/
-2. OOC images: /workspace/aroy/datasets/coco_ooc/OOC_images/
-3. Val data: /workspace/aroy/datasets/coco_ooc/graphs_normalized_part
-4. graph models: /workspace/aroy/datasets/coco_ooc/models/extra_gmm_save/
-5. sample OOC outputs: /workspace/aroy/datasets/coco_ooc/OOC_images_outputs/
+Required paths
+data_root   : /workspace/datasets/coco_ooc/graphs_normalized_part
+graph models: /workspace/datasets/coco_ooc/models/extra_gmm_save
+OOC images  : /workspace/datasets/coco_ooc/OOC_images
+OOC outputs : /workspace/datasets/coco_ooc/OOC_images_outputs
+ 
+## Sample python command:
+
+python test_coco_ooc.py --data_root /workspace/datasets/coco_ooc/graphs_normalized_part --model_dir /workspace/datasets/coco_ooc/models/extra_gmm_save --img_ip_dir /workspace/datasets/coco_ooc/OOC_images --img_op_dir /workspace/datasets/coco_ooc/OOC_images_outputs
+
+## Notebook
+
+Demo.ipynb: Chnage the paths in cell [3] and run cell [4]

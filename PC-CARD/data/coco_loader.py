@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# import ipdb
+
 from PIL import Image
 import torch
 import os
@@ -203,7 +201,7 @@ class COCOLoader():
 if __name__ == '__main__':
     DATASETS_ROOT = './datasets'
     split = 'val2014'
-    root = '/home/anirban/%s' % (split)
+    root = '/home/%s' % (split)
     annFile = '%s/coco/annotations/instances_%s.json' % (DATASETS_ROOT, split)
     ld = COCOLoader(root, annFile, included=[1])
     ld.getannotation(0)

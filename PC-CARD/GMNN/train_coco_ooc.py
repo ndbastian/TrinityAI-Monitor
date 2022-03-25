@@ -21,6 +21,7 @@ from data.data_loader import *
 from models.registry import GCN_4_layer_fc
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--data_root', type=str, help='Data feature root directory')
 parser.add_argument('--dataset', type=str, default='data')
 parser.add_argument('--save', type=str, default='gmnn_models')
 parser.add_argument('--hidden_dim', type=int, default=16, help='Hidden dimension.')
@@ -101,10 +102,9 @@ trainer_p = Trainer(opt_p, gnnp)
 train_batch_size = 1024
 val_batch_size = 1024
 
-ROOT = "/workspace/aroy/datasets/coco_ooc/feats_COCO_OOC/graphs_normalized"  # resnet50 - just crop
-
-graph_dir_train = os.path.join(ROOT, "train")
-graph_dir_test = os.path.join(ROOT, "val")
+data_root = args.data_root
+graph_dir_train = os.path.join(data_root, "train")
+graph_dir_test = os.path.join(data_root, "val")
 
 # ----------------------- data loaders -----------------------------------------
 print("curating graphs .....")

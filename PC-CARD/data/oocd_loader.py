@@ -92,13 +92,13 @@ class OOCD(Loader):
         gt_path = self.root / "new_outofcontext_groundtruth.mat"
         data = loadmat(gt_path, simplify_cells=True)  # necessary if there are arrays inside mat files
         self.data = data['Doutofcontext']
-        self.image_dir = Path("/data/diva-1/anirban/open_world_datasets/Sun_images/out_of_context")
+        self.image_dir = Path("/data/diva-1/open_world_datasets/Sun_images/out_of_context")
         # 111 classes
-        # categoriespath = "/data/diva-1/anirban/open_world_datasets/dataset/sun09_objectCategories.mat"
+        # categoriespath = "/data/diva-1/open_world_datasets/dataset/sun09_objectCategories.mat"
         # cats = loadmat(categoriespath, simplify_cells=True)
         # self.CLASSES = cats['names'].tolist()
         # 576 classes
-        sungtpath = "/data/diva-1/anirban/open_world_datasets/dataset/sun09_groundTruth.mat"
+        sungtpath = "/data/diva-1/open_world_datasets/dataset/sun09_groundTruth.mat"
         sungt = loadmat(sungtpath, simplify_cells=True)
         self.CLASSES = sungt['categories']['names'].tolist()
 

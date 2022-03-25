@@ -341,7 +341,6 @@ class GAT(nn.Module):
     References
     ----------
     Paper: https://arxiv.org/abs/1710.10903
-    Author's code: https://github.com/PetarV-/GAT
     Pytorch implementation: https://github.com/Diego999/pyGAT
     """
     def __init__(self,
