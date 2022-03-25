@@ -24,4 +24,4 @@ python test_coco_ooc.py --data_root /workspace/datasets/coco_ooc/graphs_normaliz
 
 ## Notebook
 
-Demo.ipynb: Chnage the paths in cell [3] and run cell [4]
+Demo.ipynb: Change the paths in cell [3] and run cell [4]
